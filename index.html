@@ -1067,7 +1067,7 @@
         const TAT_IMAGES_POOL = [...ppdtImages, ...tatImages, ...moreImages];
         
         const WAT_WORDS_POOL = [
-             "Accept", "Achieve", "Action", "Active", "Adopt", "Aim", "Alert", "Angry", "Army", "Attack",
+            "Accept", "Achieve", "Action", "Active", "Adopt", "Aim", "Alert", "Angry", "Army", "Attack",
             "Beat", "Beauty", "Blood", "Brave", "Care", "Caution", "Challenge", "Character", "Cheat", "Clear",
             "Climb", "Command", "Company", "Complete", "Control", "Cooperate", "Courage", "Coward", "Crisis", "Danger",
             "Dark", "Death", "Defeat", "Delay", "Demand", "Desire", "Determine", "Dictator", "Difficult", "Direct",
@@ -1579,6 +1579,29 @@
             instructionInterval: null
         };
 
+        // Generates a professional digital beep sound
+        function playBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // 800Hz frequency
+                
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Volume
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); // Fade out
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3); // 0.3 seconds duration
+            } catch (error) {
+                console.warn("Beep audio blocked or not supported:", error.message);
+            }
+        }
+
         function shuffle(array) {
             let currentIndex = array.length, randomIndex;
             while (currentIndex !== 0) {
@@ -1782,6 +1805,7 @@
             const currentImage = appState.currentTatImages[appState.currentTatIndex];
 
             if (currentImage === "BLANK") {
+                playBeep(); // Beep when blank slide text is shown
                 observeDiv.classList.add('hidden');
                 blankTextDiv.classList.remove('hidden');
                 appState.results.tat.push({ type: "BLANK" });
@@ -1798,6 +1822,7 @@
                 img.onload = () => {
                     loading.classList.add('hidden');
                     img.classList.remove('hidden');
+                    playBeep(); // Beep when image successfully loads and is shown
                     
                     let imgObj = null;
                     try { imgObj = { data: getBase64Image(img), w: img.naturalWidth, h: img.naturalHeight }; } catch(e){}
