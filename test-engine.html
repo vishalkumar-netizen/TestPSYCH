@@ -26,6 +26,15 @@
 </head>
 <body class="bg-[#0b1120] text-slate-100 overflow-x-hidden flex flex-col min-h-screen m-0 p-0">
 
+    <!-- READY VIEW (Security Screen to trigger Fullscreen) -->
+    <div id="ready-view" class="view h-screen w-full bg-slate-900 flex-col items-center justify-center p-4 z-[100]">
+        <div class="bg-slate-800 p-10 rounded-3xl shadow-2xl text-center max-w-lg w-full border-t-8 border-blue-500">
+            <h1 class="text-3xl font-extrabold text-white mb-4">Ready to Begin?</h1>
+            <p class="text-slate-400 mb-8 font-medium">Ensure you are in a quiet place and have your notebook ready. The test will enter full-screen mode.</p>
+            <button onclick="startSession()" class="w-full bg-blue-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-500/30 text-lg">Start Session</button>
+        </div>
+    </div>
+
     <!-- PRE-TEST INSTRUCTION VIEW -->
     <div id="instruction-view" class="view h-screen w-full bg-white dark:bg-slate-900 flex-col items-center justify-center p-8 z-[100]">
         <div class="max-w-4xl w-full mx-auto text-left bg-slate-50 dark:bg-slate-800 p-10 rounded-3xl shadow-2xl border border-slate-700">
@@ -179,7 +188,6 @@
         };
 
         function playInstructions(type, startCallback) {
-            enterFullscreen();
             showView('instruction-view');
             document.getElementById('inst-title').innerText = INSTRUCTIONS[type].title;
             document.getElementById('inst-content').innerHTML = INSTRUCTIONS[type].html;
@@ -205,9 +213,24 @@
                 testType = 'full';
             }
             
-            appState.testQueue = testType === 'full' ? ['TAT', 'WAT', 'SRT'] : [testType];
-            if (testType === 'PPDT') startPPDT(); else nextTest();
+            // Store the initial test type and show the Ready screen
+            appState.initialTestType = testType;
+            showView('ready-view');
         };
+
+        // Triggered by the user clicking "Start Session"
+        function startSession() {
+            enterFullscreen(); // Safe to call here because it's a direct user click!
+            
+            const testType = appState.initialTestType;
+            appState.testQueue = testType === 'full' ? ['TAT', 'WAT', 'SRT'] : [testType];
+            
+            if (testType === 'PPDT') {
+                startPPDT(); 
+            } else {
+                nextTest();
+            }
+        }
 
         function nextTest() {
             if (appState.testQueue.length === 0) return showView('result-view');
